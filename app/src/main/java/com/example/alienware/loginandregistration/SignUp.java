@@ -20,6 +20,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 /**
  * Created by Alienware on 17-01-2017.
  */
@@ -80,12 +82,14 @@ public class SignUp extends Fragment {
                     case MotionEvent.ACTION_UP:
 
                         //since we only have one button don't be concerned with nested switch inside action up
-                        if (CheckFields.areFieldsEmpty(name,user_name,email,password,confirm_password))
+                        if (HouseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
                             Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
                         else{
                                 //frag for login
-                            if(not_equal.getVisibility()== EditText.INVISIBLE)
+                            if(not_equal.getVisibility()== EditText.INVISIBLE) {
+                                jsonToPass();
                                 tc.bringChange(login);
+                            }
                         }
                 }
                 return true;
@@ -95,6 +99,10 @@ public class SignUp extends Fragment {
         return view;
     }
 
+
+    JSONObject jsonToPass(){
+        return new  HouseKeeping().createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
+    }
 }
 
 

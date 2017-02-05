@@ -1,13 +1,8 @@
 package com.example.alienware.loginandregistration;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,6 +10,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by Alienware on 20-01-2017.
@@ -62,15 +60,19 @@ public class Login extends Fragment implements View.OnTouchListener{
             case MotionEvent.ACTION_UP:
                 switch (view.getId()){
                     case R.id.login:
-                        if(CheckFields.areFieldsEmpty(user_name, password)) {
-                            Toast.makeText(getContext(), "Can't Login without information \n\t *duhhh*", Toast.LENGTH_SHORT).show();
+                        if(HouseKeeping.areFieldsEmpty(user_name, password)) {
+                            Toast.makeText(getContext(), "Fill the fields you Muppet!", Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         else {
-                            theSessionKeeper.setIsLoggedIn(user_name.getText().toString(),true);
-                            tc.bringChange(loginSuccess);
-                            //frag for successful login
-
+                            try {
+                                AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonToPass());
+                                asyncConnect.execute();
+                                //correct
+                                theSessionKeeper.setIsLoggedIn(user_name.getText().toString(), true);
+                                tc.bringChange(loginSuccess);
+                            }//frag for successful login
+                            catch(Exception e){System.out.print(e);}
                         }
                         return true;
 
@@ -82,4 +84,23 @@ public class Login extends Fragment implements View.OnTouchListener{
         }
         return true;
     }
+
+
+
+    boolean checkCredentials(){
+
+        JSONObject jsonObject = new HouseKeeping().createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
+        AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonObject);
+        asyncConnect.execute();
+
+        //pass to async
+        //check for boolean reply
+        //profit
+        return false;
+    }
+
+    JSONObject jsonToPass(){
+        return new  HouseKeeping().createJson("name",user_name.getText().toString(),"password",password.getText().toString());
+    }
+
 }
