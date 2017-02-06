@@ -25,7 +25,12 @@ public class Login extends Fragment implements View.OnTouchListener{
     TheSessionKeeper theSessionKeeper;
     LoginSuccess loginSuccess;
     SignUp signUp;
+    HouseKeeping houseKeeping;
     ChangeFrag tc;
+    boolean error = true;
+    String errorMessage = null;
+    String name,userName;
+    int uid;
 
 
     @Override
@@ -38,6 +43,7 @@ public class Login extends Fragment implements View.OnTouchListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         loginSuccess = new LoginSuccess();
         signUp = new SignUp();
+        houseKeeping = new HouseKeeping();
         theSessionKeeper = new TheSessionKeeper(getContext());
         View view = inflater.inflate(R.layout.login, container, false);
         password = (EditText)view.findViewById(R.id.password);
@@ -60,17 +66,20 @@ public class Login extends Fragment implements View.OnTouchListener{
             case MotionEvent.ACTION_UP:
                 switch (view.getId()){
                     case R.id.login:
-                        if(HouseKeeping.areFieldsEmpty(user_name, password)) {
+                        if(houseKeeping.areFieldsEmpty(user_name, password)) {
                             Toast.makeText(getContext(), "Fill the fields you Muppet!", Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         else {
                             try {
-                                AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonToPass());
-                                asyncConnect.execute();
+                                handleTheOperation();
+                               if(!error){
+                                   theSessionKeeper.setIsLoggedIn(user_name.getText().toString(), true);
+                                   tc.bringChange(loginSuccess);
+                               }
                                 //correct
-                                theSessionKeeper.setIsLoggedIn(user_name.getText().toString(), true);
-                                tc.bringChange(loginSuccess);
+
+
                             }//frag for successful login
                             catch(Exception e){System.out.print(e);}
                         }
@@ -87,20 +96,44 @@ public class Login extends Fragment implements View.OnTouchListener{
 
 
 
-    boolean checkCredentials(){
 
-        JSONObject jsonObject = new HouseKeeping().createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
-        AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonObject);
-        asyncConnect.execute();
+    void handleTheOperation(){
+        JSONObject jsonObject = houseKeeping.createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
+        AsyncConnect asyncConnect = (AsyncConnect) new AsyncConnect(getContext(), getString(R.string.link_login), jsonObject, new AsyncConnect.AsyncRevert() {
+            @Override
+            public void getJsonResponse(JSONObject jsonObject) {
+                try {
+                    error = jsonObject.getBoolean("error");
+                    if(error){
+                        errorMessage = jsonObject.getString("error_messgae");
+                    }else {
+                        uid = jsonObject.getInt("uid");
+                        name = jsonObject.getString("name");
+                        userName = jsonObject.getString("user_name");
+                    }
 
-        //pass to async
-        //check for boolean reply
-        //profit
-        return false;
+                }catch (JSONException e){System.out.println(e);}
+            }
+        }).execute();
     }
 
+
+
+
+
+    /*boolean checkCredentials(){
+
+        JSONObject jsonObject = houseKeeping.createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
+        AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonObject);
+        asyncConnect.execute();
+        try {
+             return (asyncConnect.toReturn.getBoolean("error"));
+        }catch (JSONException e){System.out.println("what we get FROM ASYNC -> " + asyncConnect.toReturn.toString());}
+        return false;
+    }
+*/
     JSONObject jsonToPass(){
-        return new  HouseKeeping().createJson("name",user_name.getText().toString(),"password",password.getText().toString());
+        return houseKeeping.createJson("name",user_name.getText().toString(),"password",password.getText().toString());
     }
 
 }

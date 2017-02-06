@@ -59,5 +59,9 @@ public class LoginSuccess extends Fragment {
         return view;
     }
 
+    void getJsonifSuccess(){
+
+    }
+
 
 }

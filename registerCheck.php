@@ -9,7 +9,7 @@ class register{
 
   $inputJson = file_get_contents('php://input');
   $input = json_decode($inputJson,true);
-
+  
   $actionTrigger  = new action();
 
   $emailExists = $actionTrigger->doesItExist("email",$input['email']);

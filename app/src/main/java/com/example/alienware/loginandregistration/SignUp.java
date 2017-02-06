@@ -20,6 +20,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -32,7 +33,12 @@ public class SignUp extends Fragment {
     EditText name, user_name, password, confirm_password,email;
     Button register;
     Login login;
+    HouseKeeping houseKeeping;
     ChangeFrag tc;
+    boolean error;
+    String nameOfUser, userName, passwordOfUser, emailOfUser;
+    String errorMessage;
+
 
 
     @Override
@@ -52,6 +58,7 @@ public class SignUp extends Fragment {
         confirm_password = (EditText) view.findViewById(R.id.confirm_password);
         not_equal = (TextView)view.findViewById(R.id.passwords_not_equal);
         login = new Login();
+        houseKeeping = new HouseKeeping();
 
         confirm_password.addTextChangedListener(new TextWatcher() {
             @Override
@@ -82,7 +89,7 @@ public class SignUp extends Fragment {
                     case MotionEvent.ACTION_UP:
 
                         //since we only have one button don't be concerned with nested switch inside action up
-                        if (HouseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
+                        if (houseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
                             Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
                         else{
                                 //frag for login
@@ -99,9 +106,27 @@ public class SignUp extends Fragment {
         return view;
     }
 
+    void handleTheOperation(){
+        JSONObject jsonObject = houseKeeping.createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
+        AsyncConnect asyncConnect = (AsyncConnect) new AsyncConnect(getContext(), getString(R.string.link_signUp), jsonObject, new AsyncConnect.AsyncRevert() {
+            @Override
+            public void getJsonResponse(JSONObject jsonObject) {
+                try {
+                    error = jsonObject.getBoolean("error");
+                    if(error){
+                        errorMessage = jsonObject.getString("error_messgae");
+                    }else {
+                        errorMessage = jsonObject.getString("success");
+                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                    }
+
+                }catch (JSONException e){System.out.println(e);}
+            }
+        }).execute();
+    }
 
     JSONObject jsonToPass(){
-        return new  HouseKeeping().createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
+        return houseKeeping.createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
     }
 }
 

@@ -3,40 +3,43 @@ package com.example.alienware.loginandregistration;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
-
 import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * Created by Alienware on 22-01-2017.
  */
 
-public class AsyncConnect extends AsyncTask<String,Void,String> {
+public class AsyncConnect extends AsyncTask<String,Void,JSONObject> {
     HttpURLConnection httpURLConnection;
     URL url;
-    String give;
+    String inputBuffer;
+    StringBuilder serverResponse;
     JSONObject json;
+    JSONObject toReturn;
     Context context;
     String link;
-    AsyncConnect(Context c,String link,JSONObject json){
+
+    public interface AsyncRevert{
+        void getJsonResponse(JSONObject jsonObject);
+    }
+
+    public AsyncRevert asyncRevert = null;
+
+    AsyncConnect(Context c,String link,JSONObject json,AsyncRevert asyncRevert){
         context = c;
         this.link = link;
         this.json = json;
+        this.asyncRevert = asyncRevert;
+
     }
 
     @Override
-    protected String doInBackground(String... strings) {
+    protected JSONObject doInBackground(String... strings) {
         try{
             url = new URL(link);
 
@@ -56,22 +59,29 @@ public class AsyncConnect extends AsyncTask<String,Void,String> {
             bufferedOutputStream.flush();
 
 
-
+            serverResponse = new StringBuilder();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            give = bufferedReader.readLine();
+            while( (inputBuffer = bufferedReader.readLine())!=null){
+            serverResponse.append(inputBuffer + "\n");
+            }
             bufferedReader.close();
-            Toast.makeText(context,give,Toast.LENGTH_SHORT).show();
+            inputBuffer = serverResponse.toString();
+            System.out.println("String from server->"+inputBuffer);
+            toReturn = new JSONObject(inputBuffer);
+
 
         }
         catch (Exception e){System.out.println(e);}
         finally {
             httpURLConnection.disconnect();
         }
-        return give;
+
+        return toReturn;
     }
 
     @Override
-    protected void onPostExecute(String s) {
-      Toast.makeText(context,give,Toast.LENGTH_SHORT).show();
+    protected void onPostExecute(JSONObject jsonObject) {
+        asyncRevert.getJsonResponse(jsonObject);
     }
+
 }
