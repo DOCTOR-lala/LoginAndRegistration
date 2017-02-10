@@ -31,8 +31,8 @@ public class Login extends Fragment implements View.OnTouchListener{
     ChangeFrag tc;
     boolean error = true;
     String errorMessage = null;
-    String name,userName,email,dateOfCreation;
-    int uid;
+    String uid,name,userName,email,dateOfCreation;
+
 
 
     @Override
@@ -43,7 +43,7 @@ public class Login extends Fragment implements View.OnTouchListener{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        loginSuccess = new LoginSuccess();
+        //loginSuccess = new LoginSuccess();
         signUp = new SignUp();
         houseKeeping = new HouseKeeping();
         theSessionKeeper = new TheSessionKeeper(getContext());
@@ -104,14 +104,14 @@ public class Login extends Fragment implements View.OnTouchListener{
                         Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
                     }else {
 
-                        tc.bringChange(loginSuccess);
-                        uid = jsonObject.getInt("uid");
+                        uid = jsonObject.getString("uid");
                         JSONObject innerJson = jsonObject.getJSONObject("user");
                         name = innerJson.getString("name");
                         userName = innerJson.getString("user_name");
                         email = innerJson.getString("email");
-                        dateOfCreation = innerJson.getString("DateOfCreations");
-                        theSessionKeeper.setIsLoggedIn(userName, true);
+                        dateOfCreation = innerJson.getString("DateOfCreation");
+                        theSessionKeeper.setIsLoggedIn(true,uid,name,userName,email,dateOfCreation);
+                        tc.bringChange(new LoginSuccess());
                     }
 
                 }catch (JSONException e){System.out.println(e);}
