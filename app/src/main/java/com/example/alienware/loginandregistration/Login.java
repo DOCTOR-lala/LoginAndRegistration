@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -21,7 +22,8 @@ import org.json.JSONObject;
 public class Login extends Fragment implements View.OnTouchListener{
 
     EditText password, user_name;
-    Button login, sign_up;
+    Button login;
+    TextView sign_up;
     TheSessionKeeper theSessionKeeper;
     LoginSuccess loginSuccess;
     SignUp signUp;
@@ -29,7 +31,7 @@ public class Login extends Fragment implements View.OnTouchListener{
     ChangeFrag tc;
     boolean error = true;
     String errorMessage = null;
-    String name,userName;
+    String name,userName,email,dateOfCreation;
     int uid;
 
 
@@ -50,7 +52,7 @@ public class Login extends Fragment implements View.OnTouchListener{
         user_name = (EditText)view.findViewById(R.id.user_name);
 
         login = (Button) view.findViewById(R.id.login);
-        sign_up = (Button) view.findViewById(R.id.sign_up);
+        sign_up = (TextView) view.findViewById(R.id.sign_up);
         login.setOnTouchListener(this);
         sign_up.setOnTouchListener(this);
         return view;
@@ -73,13 +75,6 @@ public class Login extends Fragment implements View.OnTouchListener{
                         else {
                             try {
                                 handleTheOperation();
-                               if(!error){
-                                   theSessionKeeper.setIsLoggedIn(user_name.getText().toString(), true);
-                                   tc.bringChange(loginSuccess);
-                               }
-                                //correct
-
-
                             }//frag for successful login
                             catch(Exception e){System.out.print(e);}
                         }
@@ -99,41 +94,29 @@ public class Login extends Fragment implements View.OnTouchListener{
 
     void handleTheOperation(){
         JSONObject jsonObject = houseKeeping.createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
-        AsyncConnect asyncConnect = (AsyncConnect) new AsyncConnect(getContext(), getString(R.string.link_login), jsonObject, new AsyncConnect.AsyncRevert() {
+         new AsyncConnect(getContext(), getString(R.string.link_login), jsonObject, new AsyncConnect.AsyncRevert() {
             @Override
             public void getJsonResponse(JSONObject jsonObject) {
                 try {
                     error = jsonObject.getBoolean("error");
                     if(error){
-                        errorMessage = jsonObject.getString("error_messgae");
+                        errorMessage = jsonObject.getString("message");
+                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
                     }else {
+
+                        tc.bringChange(loginSuccess);
                         uid = jsonObject.getInt("uid");
-                        name = jsonObject.getString("name");
-                        userName = jsonObject.getString("user_name");
+                        JSONObject innerJson = jsonObject.getJSONObject("user");
+                        name = innerJson.getString("name");
+                        userName = innerJson.getString("user_name");
+                        email = innerJson.getString("email");
+                        dateOfCreation = innerJson.getString("DateOfCreations");
+                        theSessionKeeper.setIsLoggedIn(userName, true);
                     }
 
                 }catch (JSONException e){System.out.println(e);}
             }
         }).execute();
-    }
-
-
-
-
-
-    /*boolean checkCredentials(){
-
-        JSONObject jsonObject = houseKeeping.createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
-        AsyncConnect asyncConnect = new AsyncConnect(getContext(),getString(R.string.link_login),jsonObject);
-        asyncConnect.execute();
-        try {
-             return (asyncConnect.toReturn.getBoolean("error"));
-        }catch (JSONException e){System.out.println("what we get FROM ASYNC -> " + asyncConnect.toReturn.toString());}
-        return false;
-    }
-*/
-    JSONObject jsonToPass(){
-        return houseKeeping.createJson("name",user_name.getText().toString(),"password",password.getText().toString());
     }
 
 }

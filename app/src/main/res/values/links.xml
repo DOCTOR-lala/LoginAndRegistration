@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="link_login">http://www.milestoneplastics.com/test4.php</string>
-    <string name="link_signUp">http://www..com/.php</string>
+    <string name="link_login">http://192.168.1.100/phpWorkspace/Login.php</string>
+    <string name="link_signUp">http://192.168.1.100/phpWorkspace/Register.php</string>
 </resources>

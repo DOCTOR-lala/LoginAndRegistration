@@ -9,4 +9,5 @@
     <string name="logout">LogOut</string>
     <string name="e_mail">E-mail</string>
     <string name="sign_up">Sign Up</string>
+    <string name="passwords_don_t_match">Passwords Don\'t Match</string>
 </resources>

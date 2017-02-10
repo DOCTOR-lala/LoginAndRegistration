@@ -27,16 +27,16 @@ import org.json.JSONObject;
  * Created by Alienware on 17-01-2017.
  */
 
-public class SignUp extends Fragment {
+public class SignUp extends Fragment implements View.OnTouchListener{
 
     TextView not_equal;
     EditText name, user_name, password, confirm_password,email;
     Button register;
+    TextView loginGateway;
     Login login;
     HouseKeeping houseKeeping;
     ChangeFrag tc;
     boolean error;
-    String nameOfUser, userName, passwordOfUser, emailOfUser;
     String errorMessage;
 
 
@@ -56,9 +56,14 @@ public class SignUp extends Fragment {
         email = (EditText)view.findViewById(R.id.email);
         password = (EditText) view.findViewById(R.id.password);
         confirm_password = (EditText) view.findViewById(R.id.confirm_password);
+        register = (Button) view.findViewById(R.id.register);
         not_equal = (TextView)view.findViewById(R.id.passwords_not_equal);
+        loginGateway = (TextView)view.findViewById(R.id.loginGateway);
         login = new Login();
         houseKeeping = new HouseKeeping();
+
+        register.setOnTouchListener(this);
+        loginGateway.setOnTouchListener(this);
 
         confirm_password.addTextChangedListener(new TextWatcher() {
             @Override
@@ -78,55 +83,50 @@ public class SignUp extends Fragment {
         });
 
 
-        register = (Button) view.findViewById(R.id.register);
-        register.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()){
-
-                    case MotionEvent.ACTION_DOWN: return true;
-
-                    case MotionEvent.ACTION_UP:
-
-                        //since we only have one button don't be concerned with nested switch inside action up
-                        if (houseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
-                            Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
-                        else{
-                                //frag for login
-                            if(not_equal.getVisibility()== EditText.INVISIBLE) {
-                                jsonToPass();
-                                tc.bringChange(login);
-                            }
-                        }
-                }
-                return true;
-            }
-        });
-
         return view;
     }
 
+
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        switch (motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                return true;
+            case MotionEvent.ACTION_UP:
+                switch (view.getId()) {
+                    case R.id.register:
+                        if (houseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
+                            Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
+                        else{
+                            if(not_equal.getVisibility()== EditText.INVISIBLE) {
+                                handleTheOperation();
+                            }
+                        }
+                        return true;
+                    case R.id.loginGateway:
+                        tc.bringChange(login);
+                        return true;
+                }
+        }
+        return true;
+    }
+
+
     void handleTheOperation(){
         JSONObject jsonObject = houseKeeping.createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
-        AsyncConnect asyncConnect = (AsyncConnect) new AsyncConnect(getContext(), getString(R.string.link_signUp), jsonObject, new AsyncConnect.AsyncRevert() {
+         new AsyncConnect(getContext(), getString(R.string.link_signUp), jsonObject, new AsyncConnect.AsyncRevert() {
             @Override
             public void getJsonResponse(JSONObject jsonObject) {
                 try {
                     error = jsonObject.getBoolean("error");
-                    if(error){
-                        errorMessage = jsonObject.getString("error_messgae");
-                    }else {
-                        errorMessage = jsonObject.getString("success");
-                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
-                    }
-
+                    errorMessage = jsonObject.getString("message");
+                    Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                    if(!error)
+                        tc.bringChange(login);
                 }catch (JSONException e){System.out.println(e);}
             }
         }).execute();
-    }
-
-    JSONObject jsonToPass(){
-        return houseKeeping.createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
     }
 }
 
