@@ -2,4 +2,5 @@
 <resources>
     <string name="link_login">http://192.168.1.100/phpWorkspace/Login.php</string>
     <string name="link_signUp">http://192.168.1.100/phpWorkspace/Register.php</string>
+    <string name="link_logOut">http://192.168.1.100/phpWorkspace/Logout.php</string>>
 </resources>

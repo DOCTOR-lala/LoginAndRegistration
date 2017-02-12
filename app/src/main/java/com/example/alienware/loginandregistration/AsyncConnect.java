@@ -24,6 +24,7 @@ public class AsyncConnect extends AsyncTask<String,Void,JSONObject> {
     Context context;
     String link;
 
+
     public interface AsyncRevert{
         void getJsonResponse(JSONObject jsonObject);
     }
@@ -51,9 +52,11 @@ public class AsyncConnect extends AsyncTask<String,Void,JSONObject> {
             httpURLConnection.setRequestMethod("GET");
             httpURLConnection.setDoInput(true);
             httpURLConnection.setDoOutput(true);
-
-            httpURLConnection.connect();
-
+try {
+    httpURLConnection.connect();
+}catch (Exception e){
+    e.printStackTrace();
+}
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(httpURLConnection.getOutputStream());
             bufferedOutputStream.write(json.toString().getBytes());
             bufferedOutputStream.flush();

@@ -3,7 +3,9 @@ package com.example.alienware.loginandregistration;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.HandlerThread;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.logging.Handler;
 
 /**
  * Created by Alienware on 17-01-2017.
@@ -25,7 +33,8 @@ public class LoginSuccess extends Fragment {
     Button logout;
     ChangeFrag tc;
     Login login;
-
+    JSONObject jsonObject;
+    String errorMessage = "beeepboooppp! errrr!!!! Looks like you're trapped here for Ever :{) ";
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -58,8 +67,25 @@ public class LoginSuccess extends Fragment {
                 switch (motionEvent.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         //frag for login
-                        theSessionKeeper.logOut();
-                        tc.bringChange(login);
+                        try {
+                            jsonObject = new JSONObject();
+                            jsonObject.put("uid", theSessionKeeper.get("uid"));
+                        }catch (JSONException e){e.printStackTrace();}
+
+                        new AsyncConnect(getContext(),getString(R.string.link_logOut),jsonObject, new AsyncConnect.AsyncRevert() {
+                            @Override
+                            public void getJsonResponse(JSONObject jsonObject) {
+                                try {
+                                    if (jsonObject.getBoolean("error")) {
+                                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        theSessionKeeper.logOut();
+                                        tc.bringChange(login);
+                                    }
+                                }catch (JSONException e){e.printStackTrace();}
+
+                            }
+                        }).execute();
 
                         return true;
                 }
