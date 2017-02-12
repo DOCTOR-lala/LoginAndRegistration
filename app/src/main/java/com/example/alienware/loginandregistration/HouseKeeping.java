@@ -34,9 +34,7 @@ public class HouseKeeping {
         return false;
     }
 
-    String createHash(String secret){
-        return
-    }
+
 
 
  //to encode and decode password

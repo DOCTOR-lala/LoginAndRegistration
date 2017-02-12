@@ -54,6 +54,29 @@ class Actions {
 
   }
 
+  function setLoggedIn($bool, $id){
+    $result= $this->connection->prepare("UPDATE users set loggedIn = '$bool' where uid = ?");
+    $result->bind_param('s', $id);
+    $result->execute();
+    if($this->connection->affected_rows > 0){
+        $result->close();
+        return true;
+    }else {
+        $result->close();
+        return false;
+    }
+  }
+
+  function isLoggedIn($user_name){
+    $result = $this->connection->prepare("SELECT loggedIn from users where user_name  = ?");
+    $result->bind_param('s', $user_name);
+    $result->execute();
+    $result->bind_result($bool);
+    $result->fetch();
+    $result->close();
+    return $bool;
+  }
+
 
 
 }

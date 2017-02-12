@@ -17,7 +17,6 @@ $name = $input['name'];
 $user_name = $input['user_name'];
 $email = $input['email'];
 $password = $input['password'];
-
 $emailBoolean = $trigger->isExisting('email',$email);
 $user_nameBoolean = $trigger->isExisting('user_name',$user_name);
 
