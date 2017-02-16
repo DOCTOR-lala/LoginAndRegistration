@@ -2,12 +2,15 @@ package com.example.alienware.loginandregistration;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -21,6 +24,7 @@ public class AsyncConnect extends AsyncTask<String,Void,JSONObject> {
     StringBuilder serverResponse;
     JSONObject json;
     JSONObject toReturn;
+    JSONObject failed;
     Context context;
     String link;
 
@@ -40,51 +44,68 @@ public class AsyncConnect extends AsyncTask<String,Void,JSONObject> {
     }
 
     @Override
-    protected JSONObject doInBackground(String... strings) {
-        try{
-            url = new URL(link);
+        protected JSONObject doInBackground(String... strings) {
+                try {
+                    failed = new JSONObject();
+                    failed.put("error",true);
+                    failed.put("message","can't connect");
+                }catch (JSONException e){e.printStackTrace();}
 
-            //httpURLConnection.setFixedLengthStreamingMode(json.toString().length());
-            httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setReadTimeout( 10000 /*milliseconds*/ );
-            httpURLConnection.setConnectTimeout( 15000 /* milliseconds */ );
-            httpURLConnection.setRequestMethod("POST");
-            httpURLConnection.setRequestMethod("GET");
-            httpURLConnection.setDoInput(true);
-            httpURLConnection.setDoOutput(true);
-try {
-    httpURLConnection.connect();
-}catch (Exception e){
-    e.printStackTrace();
-}
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(httpURLConnection.getOutputStream());
-            bufferedOutputStream.write(json.toString().getBytes());
-            bufferedOutputStream.flush();
-
-
-            serverResponse = new StringBuilder();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            while( (inputBuffer = bufferedReader.readLine())!=null){
-            serverResponse.append(inputBuffer + "\n");
-            }
-            bufferedReader.close();
-            inputBuffer = serverResponse.toString();
-            System.out.println("String from server->"+inputBuffer);
-            toReturn = new JSONObject(inputBuffer);
+                        if(isUrlReachable(link)){
+                            try {
+                            url = new URL(link);
+                            httpURLConnection = (HttpURLConnection) url.openConnection();
+                            httpURLConnection.setReadTimeout(10000 /*milliseconds*/);
+                            httpURLConnection.setConnectTimeout(15000 /* milliseconds */);
+                            httpURLConnection.setRequestMethod("POST");
+                            httpURLConnection.setRequestMethod("GET");
+                            httpURLConnection.setDoInput(true);
+                            httpURLConnection.setDoOutput(true);
+                            httpURLConnection.connect();
+                            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(httpURLConnection.getOutputStream());
+                            bufferedOutputStream.write(json.toString().getBytes());
+                            bufferedOutputStream.flush();
 
 
+                            serverResponse = new StringBuilder();
+                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                            while ((inputBuffer = bufferedReader.readLine()) != null) {
+                                serverResponse.append(inputBuffer + "\n");
+                            }
+                            bufferedReader.close();
+                            inputBuffer = serverResponse.toString();
+                            System.out.println("String from server->" + inputBuffer);
+                            toReturn = new JSONObject(inputBuffer);
+
+                        } catch (Exception e){System.out.println(e);}
+                    finally {
+                        httpURLConnection.disconnect();
+                    }
+                    return toReturn;
+                }else { return failed; }
         }
-        catch (Exception e){System.out.println(e);}
-        finally {
-            httpURLConnection.disconnect();
-        }
 
-        return toReturn;
-    }
+
+
+
 
     @Override
     protected void onPostExecute(JSONObject jsonObject) {
         asyncRevert.getJsonResponse(jsonObject);
     }
 
+    public static boolean isUrlReachable(String address){
+        try {
+            URL url = new URL(address);
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setConnectTimeout(3000);
+            http.connect();
+            if(http.getResponseCode()==200){
+                http.disconnect();
+                return true;
+            }else { http.disconnect(); return false;}
+        }catch (MalformedURLException e){e.printStackTrace();}
+        catch (IOException e){e.printStackTrace();}
+        return false;
+    }
 }

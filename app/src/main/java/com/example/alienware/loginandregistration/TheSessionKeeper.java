@@ -12,31 +12,37 @@ public class TheSessionKeeper {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private Context context;
+    private static TheSessionKeeper theSessionKeeper;
     private static final String file = "Hello World!";
     private static String isLoggedIn = "LoggedIn";
-    private static String who = "Who";
     private static final int mode =0;
     private static final String[] fields = {"uid","name","user_name","email","dateOfCreation"};
 
     public TheSessionKeeper(Context c){
         this.context = c;
         sharedPreferences = context.getSharedPreferences(file,mode);
-        editor = sharedPreferences.edit();
+
     }
 
+    public static synchronized TheSessionKeeper getInstance(Context context){
+        if(theSessionKeeper==null) theSessionKeeper = new TheSessionKeeper(context);
+        return theSessionKeeper;
+    }
 
     public void setIsLoggedIn(boolean loggedIn,String... info){
+        editor = sharedPreferences.edit();
         editor.putBoolean(isLoggedIn,loggedIn);
         for (int i =0 ;i < info.length;i++){
             editor.putString(fields[i],info[i]);
-            editor.commit();
+            editor.apply();
         }
 
     }
 
     public void logOut(){
+        editor = sharedPreferences.edit();
         editor.putBoolean(isLoggedIn,false);
-        editor.commit();
+        editor.apply();
     }
 
     public boolean isLoggedIn(){

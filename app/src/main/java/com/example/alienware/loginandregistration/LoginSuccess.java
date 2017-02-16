@@ -3,10 +3,13 @@ package com.example.alienware.loginandregistration;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -32,6 +35,7 @@ public class LoginSuccess extends Fragment {
     TheSessionKeeper theSessionKeeper;
     Button logout;
     ChangeFrag tc;
+    CoordinatorLayout coordinatorLayout;
     Login login;
     JSONObject jsonObject;
     String errorMessage = "beeepboooppp! errrr!!!! Looks like you're trapped here for Ever :{) ";
@@ -46,7 +50,8 @@ public class LoginSuccess extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         login = new Login();
         View view = inflater.inflate(R.layout.login_success,container,false);
-        theSessionKeeper = new TheSessionKeeper(getContext());
+        coordinatorLayout = (CoordinatorLayout)view.findViewById(R.id.coordinator_loginsuccess);
+        theSessionKeeper = TheSessionKeeper.getInstance(getContext());
         uid = (TextView)view.findViewById(R.id.uid);
         name = (TextView)view.findViewById(R.id.nameOfUser);
         userName = (TextView)view.findViewById(R.id.userName);
@@ -54,6 +59,7 @@ public class LoginSuccess extends Fragment {
         dateOfCreation = (TextView)view.findViewById(R.id.dateOfCreation);
 
         uid.setText(theSessionKeeper.get("uid"));
+        //userName.setText(theSessionKeeper.get("user_name"));
         userName.setText(theSessionKeeper.get("user_name"));
         name.setText(theSessionKeeper.get("name"));
         email.setText(theSessionKeeper.get("email"));
@@ -77,7 +83,8 @@ public class LoginSuccess extends Fragment {
                             public void getJsonResponse(JSONObject jsonObject) {
                                 try {
                                     if (jsonObject.getBoolean("error")) {
-                                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                                        Snackbar.make(coordinatorLayout, errorMessage, Snackbar.LENGTH_SHORT).show();
+                                        //Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
                                     }else {
                                         theSessionKeeper.logOut();
                                         tc.bringChange(login);

@@ -2,6 +2,8 @@ package com.example.alienware.loginandregistration;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,6 +28,7 @@ public class Login extends Fragment implements View.OnTouchListener{
     TextView sign_up;
     TheSessionKeeper theSessionKeeper;
     LoginSuccess loginSuccess;
+    CoordinatorLayout coordinatorLayout;
     SignUp signUp;
     HouseKeeping houseKeeping;
     ChangeFrag tc;
@@ -46,8 +49,9 @@ public class Login extends Fragment implements View.OnTouchListener{
         //loginSuccess = new LoginSuccess();
         signUp = new SignUp();
         houseKeeping = new HouseKeeping();
-        theSessionKeeper = new TheSessionKeeper(getContext());
+        theSessionKeeper = TheSessionKeeper.getInstance(getContext());
         View view = inflater.inflate(R.layout.login, container, false);
+        coordinatorLayout = (CoordinatorLayout)view.findViewById(R.id.login_coordinator);
         password = (EditText)view.findViewById(R.id.password);
         user_name = (EditText)view.findViewById(R.id.user_name);
 
@@ -69,7 +73,8 @@ public class Login extends Fragment implements View.OnTouchListener{
                 switch (view.getId()){
                     case R.id.login:
                         if(houseKeeping.areFieldsEmpty(user_name, password)) {
-                            Toast.makeText(getContext(), "Fill the fields you Muppet!", Toast.LENGTH_SHORT).show();
+                            Snackbar.make(coordinatorLayout,"Fill The Fields You Muppet!",Snackbar.LENGTH_SHORT).show();
+                            //Toast.makeText(getContext(), "Fill the fields you Muppet!", Toast.LENGTH_SHORT).show();
                             return true;
                         }
                         else {
@@ -93,7 +98,9 @@ public class Login extends Fragment implements View.OnTouchListener{
 
 
     void handleTheOperation(){
-        JSONObject jsonObject = houseKeeping.createJson("user_name",user_name.getText().toString(),"password",password.getText().toString());
+        String un = user_name.getText().toString();
+        String pass = password.getText().toString();
+        JSONObject jsonObject = houseKeeping.createJson("user_name",un,"password",HouseKeeping.passwordToSend(un,pass));
          new AsyncConnect(getContext(), getString(R.string.link_login), jsonObject, new AsyncConnect.AsyncRevert() {
             @Override
             public void getJsonResponse(JSONObject jsonObject) {
@@ -101,7 +108,8 @@ public class Login extends Fragment implements View.OnTouchListener{
                     error = jsonObject.getBoolean("error");
                     if(error){
                         errorMessage = jsonObject.getString("message");
-                        Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                        Snackbar.make(coordinatorLayout,errorMessage,Snackbar.LENGTH_SHORT).show();
+                        //Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
                     }else {
 
                         uid = jsonObject.getString("uid");

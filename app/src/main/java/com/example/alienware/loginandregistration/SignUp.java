@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -38,7 +40,7 @@ public class SignUp extends Fragment implements View.OnTouchListener{
     ChangeFrag tc;
     boolean error;
     String errorMessage;
-
+    CoordinatorLayout coordinatorLayout;
 
 
     @Override
@@ -51,6 +53,7 @@ public class SignUp extends Fragment implements View.OnTouchListener{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.signup,container,false);
+        coordinatorLayout = (CoordinatorLayout)view.findViewById(R.id.signup_coordinator);
         name = (EditText) view.findViewById(R.id.name);
         user_name = (EditText) view.findViewById(R.id.user_name);
         email = (EditText)view.findViewById(R.id.email);
@@ -97,7 +100,8 @@ public class SignUp extends Fragment implements View.OnTouchListener{
                 switch (view.getId()) {
                     case R.id.register:
                         if (houseKeeping.areFieldsEmpty(name,user_name,email,password,confirm_password))
-                            Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
+                            Snackbar.make(coordinatorLayout,"You're a special kind of idiot",Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(getContext(), "You're a special kind of idiot", Toast.LENGTH_SHORT).show();
                         else{
                             if(not_equal.getVisibility()== EditText.INVISIBLE) {
                                 handleTheOperation();
@@ -114,14 +118,17 @@ public class SignUp extends Fragment implements View.OnTouchListener{
 
 
     void handleTheOperation(){
-        JSONObject jsonObject = houseKeeping.createJson("name",name.getText().toString(),"user_name",user_name.getText().toString(),"email",email.getText().toString(),"password",password.getText().toString());
+        String un = user_name.getText().toString();
+        String pass = password.getText().toString();
+        JSONObject jsonObject = houseKeeping.createJson("name",name.getText().toString(),"user_name",un,"email",email.getText().toString(),"password",HouseKeeping.passwordToSend(un,pass));
          new AsyncConnect(getContext(), getString(R.string.link_signUp), jsonObject, new AsyncConnect.AsyncRevert() {
             @Override
             public void getJsonResponse(JSONObject jsonObject) {
                 try {
                     error = jsonObject.getBoolean("error");
                     errorMessage = jsonObject.getString("message");
-                    Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
+                    Snackbar.make(coordinatorLayout,errorMessage,Snackbar.LENGTH_SHORT).show();
+                    //Toast.makeText(getContext(),errorMessage,Toast.LENGTH_SHORT).show();
                     if(!error)
                         tc.bringChange(login);
                 }catch (JSONException e){System.out.println(e);}
